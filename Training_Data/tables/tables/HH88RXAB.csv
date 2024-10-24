@@ -1,0 +1,21 @@
+col0,col1,col2
+"Embassy of Vietnam, London","Embassy of the United Kingdom, Hanoi",United Kingdom
+"Embassy of Norway, London","Embassy of the United Kingdom, Oslo",United Kingdom
+"Embassy of Hungary, London","Embassy of the United Kingdom, Budapest",United Kingdom
+"Embassy of France, Beijing","Embassy of the People's Republic of China, Paris",People's Republic of China
+"Embassy of Djibouti, Paris","Embassy of France, Djibouti",France
+"Embassy of France, Budapest",Embassy of Hungary in France,Hungary
+"Embassy of France, Tokyo","Embassy of Japan, Paris",Japan
+"Embassy of Japan, Moscow","Embassy of Russia, Tokyo",Russia
+"Embassy of Poland, Seoul","Embassy of South Korea, Warsaw",South Korea
+"German Embassy, Beijing","Embassy of the People's Republic of China, Berlin",People's Republic of China
+Embassy of Hungary in France,"Embassy of France, Budapest",France
+"Embassy of Germany, Paris",Embassy of France in Berlin,France
+"Embassy of Hungary, Warsaw","Embassy of Poland, Budapest",Poland
+"Embassy of Hungary, Oslo","Embassy of Norway, Budapest",Norway
+"Embassy of Azerbaijan, Tokyo","Embassy of Japan, Baku",Japan
+"Embassy of Germany, Tokyo","Embassy of Japan, Berlin",Japan
+"Embassy of France, Bratislava","Embassy of Slovakia, Paris",Slovakia
+"Embassy of Hungary, Moscow","Embassy of Russia, in Budapest",Russia
+"Embassy of Germany, Moscow","Embassy of Russia, Berlin",Russia
+"Embassy of Russia, Beijing",Embassy of the People's Republic of China in Moscow,People's Republic of China
