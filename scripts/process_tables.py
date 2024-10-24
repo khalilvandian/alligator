@@ -225,8 +225,8 @@ if __name__ == "__main__":
         #     "cta": "", 
         # },
         "finetuning-dataset_test": { 
-            "tables": "B:/Projects/Innograph/Training_Data/tables_test", 
-            "cea": "B:/Projects/Innograph/Training_Data/gt/cea_gt.csv", 
+            "tables": "./Training_Data/tables_test", 
+            "cea": "./Training_Data/gt/cea_gt.csv", 
             "cpa": "", 
             "cta": "", 
         },
