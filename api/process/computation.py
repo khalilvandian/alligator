@@ -3,37 +3,42 @@ import os
 import sys
 import time
 import traceback
+import tracemalloc
 
+import psutil
 import redis
 from keras.models import load_model
 
 import utils.utils as utils
 from phases.data_preparation import DataPreparation
+from phases.decision import Decision
+from phases.featuresExtraction import FeauturesExtraction
 from phases.featuresExtractionRevision import FeaturesExtractionRevision
-from phases.feauturesExtraction import FeauturesExtraction
 from phases.lookup import Lookup
 from phases.prediction import Prediction
-from phases.decision import Decision
-from wrapper.lamAPI import LamAPI
 from wrapper.Database import MongoDBWrapper  # MongoDB database wrapper
-
+from wrapper.lamAPI import LamAPI
 
 
 async def main():
-    start = time.time()
+    proc = psutil.Process()
+    rss = proc.memory_info().rss  # Resident Set Size (in bytes)
+    vms = proc.memory_info().vms  # Virtual Memory Size (in bytes)
+    tracemalloc.start()
+    start = time.perf_counter()
 
     pn_neural_path = "./process/ml_models/Linker_PN_100.h5"
     rn_neural_path = "./process/ml_models/Linker_RN_100.h5"
+    # rn_neural_path = "./process/ml_models/RN_model_from_scratch_turl-120k-correct-qid-filtered.h5"
+    # rn_neural_path = "./process/ml_models/RN_model_from_scratch_turl-120k-no-correct-qid-filtered.h5"
 
-    pn_model = load_model(pn_neural_path)    
-    rn_model = load_model(rn_neural_path)    
-
+    pn_model = load_model(pn_neural_path)
+    rn_model = load_model(rn_neural_path)
 
     REDIS_ENDPOINT = os.environ["REDIS_ENDPOINT"]
     REDIS_JOB_DB = int(os.environ["REDIS_JOB_DB"])
     LAMAPI_HOST = os.environ["LAMAPI_ENDPOINT"]
     LAMAPI_TOKEN = os.environ["LAMAPI_TOKEN"]
-
 
     job_active = redis.Redis(host=REDIS_ENDPOINT, db=REDIS_JOB_DB)
 
@@ -46,7 +51,7 @@ async def main():
     cpa_c = mongoDBWrapper.get_collection("cpa")
     cta_c = mongoDBWrapper.get_collection("cta")
     cea_prelinking_c = mongoDBWrapper.get_collection("ceaPrelinking")
-   
+
     data = row_c.find_one_and_update({"status": "TODO"}, {"$set": {"status": "DOING"}})
 
     if data is None:
@@ -55,8 +60,6 @@ async def main():
         sys.exit(0)
 
     rows_data = data["rows"]
-    kg_reference = data["kgReference"]
-    limit = data["candidateSize"]
     column_metadata = data["column"]
     target = data["target"]
     _id = data["_id"]
@@ -64,27 +67,33 @@ async def main():
     table_name = data["tableName"]
     page = data["page"]
     header = data["header"]
+    lamapi_kwargs = data.get("lamapi_kwargs", {"kg": "wikidata", "limit": 50})
+    kg_reference = lamapi_kwargs.get("kg", "wikidata")
 
+    # Instantiate the LAMAPI object
     lamAPI = LamAPI(LAMAPI_HOST, LAMAPI_TOKEN, mongoDBWrapper, kg=kg_reference)
 
     obj_row_update = {"status": "DONE", "time": None}
     dp = DataPreparation(header, rows_data, lamAPI)
-    
+
     try:
         column_metadata, target = await dp.compute_datatype(column_metadata, target)
         if target["SUBJ"] is not None:
             column_metadata[str(target["SUBJ"])] = "SUBJ"
         obj_row_update["column"] = column_metadata
         obj_row_update["metadata"] = {
-            "column": [{"idColumn": int(id_col), "tag": column_metadata[id_col]} for id_col in column_metadata]
+            "column": [
+                {"idColumn": int(id_col), "tag": column_metadata[id_col]}
+                for id_col in column_metadata
+            ]
         }
         obj_row_update["target"] = target
-            
+
         metadata = {
             "datasetName": dataset_name,
             "tableName": table_name,
             "kgReference": kg_reference,
-            "page": page
+            "page": page,
         }
 
         collections = {
@@ -92,11 +101,11 @@ async def main():
             "cea": cea_c,
             "cta": cta_c,
             "cpa": cpa_c,
-            "candidateScored": candidate_scored_c
+            "candidateScored": candidate_scored_c,
         }
         dp.rows_normalization()
-        l = Lookup(data, lamAPI, target, log_c, kg_reference, limit)
-        await l.generate_candidates()
+        l = Lookup(data, lamAPI, target, log_c)
+        await l.generate_candidates(lamapi_kwargs=lamapi_kwargs)
         rows = l.get_rows()
         features = await FeauturesExtraction(rows, lamAPI).compute_feautures()
         Prediction(rows, features, pn_model).compute_prediction("rho")
@@ -104,20 +113,37 @@ async def main():
         revision = FeaturesExtractionRevision(rows)
         features = revision.compute_features()
         Prediction(rows, features, rn_model).compute_prediction("rho'")
-        storage = Decision(metadata, cea_preliking_data, rows, revision._cta, revision._cpa_pair, collections)
+        storage = Decision(
+            metadata,
+            cea_preliking_data,
+            rows,
+            revision._cta,
+            revision._cpa_pair,
+            collections,
+        )
         storage.store_data()
-        end = time.time()
+        end = time.perf_counter()
         execution_time = round(end - start, 2)
+        mem_size, mem_peak = tracemalloc.get_traced_memory()
+        rss = proc.memory_info().rss - rss
+        vms = proc.memory_info().vms - vms
+        obj_row_update["time"] = execution_time
+        obj_row_update["memory_size"] = mem_size
+        obj_row_update["memory_peak"] = mem_peak
+        obj_row_update["rss"] = rss
+        obj_row_update["vms"] = vms
         obj_row_update["time"] = execution_time
         row_c.update_one({"_id": _id}, {"$set": obj_row_update})
         print("End", flush=True)
     except Exception as e:
-        log_c.insert_one({
-            "datasetName": dataset_name, 
-            "tableName": table_name, 
-            "error": str(e), 
-            "stackTrace": traceback.format_exc()
-        })
+        log_c.insert_one(
+            {
+                "datasetName": dataset_name,
+                "tableName": table_name,
+                "error": str(e),
+                "stackTrace": traceback.format_exc(),
+            }
+        )
 
 
 # Run the asyncio event loop

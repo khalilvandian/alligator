@@ -8,7 +8,9 @@ import requests
 import tqdm
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Get the results of the annotations from Alligator")
+    parser = argparse.ArgumentParser(
+        description="Get the results of the annotations from Alligator"
+    )
     parser.add_argument(
         "--endpoint",
         type=str,
@@ -62,7 +64,10 @@ if __name__ == "__main__":
             if row.qid.lower() == "nil"
         }
     else:
-        gt_mapping = {f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid} for row in gt.itertuples()}
+        gt_mapping = {
+            f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid}
+            for row in gt.itertuples()
+        }
         gt_mapping_nil = {}
     tp = 0
     all_gt = len(gt) - len(gt_mapping_nil)
