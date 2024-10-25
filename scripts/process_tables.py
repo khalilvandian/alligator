@@ -237,9 +237,9 @@ if __name__ == "__main__":
         #     "cpa": "", 
         #     "cta": "", 
         # },
-        "finetuning-dataset_test": { 
-            "tables": "./Training_Data/tables_test", 
-            "cea": "./Training_Data/gt/cea_gt.csv", 
+        "finetuning-dataset": { 
+            "tables": "./Training_Data/tables", 
+            "cea": "./Training_Data/gt/finetuning_gt.csv", 
             "cpa": "", 
             "cta": "", 
         },
