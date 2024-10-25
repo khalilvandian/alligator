@@ -169,4 +169,7 @@ results
 training/
 .vscode/
 finetuning/
+Github_Data/
+Training_Data/
+
 

@@ -232,14 +232,14 @@ if __name__ == "__main__":
         #     "cta": "",
         # },
         # "finetuning-dataset": { 
-        #     "tables": "B:/Projects/Innograph/Training_Data/tables/tables", 
-        #     "cea": "B:/Projects/Innograph/Training_Data/gt/cea_gt.csv", 
+        #     "tables": "./Training_Data/tables", 
+        #     "cea": "./Training_Data/gt/finetuning_gt.csv", 
         #     "cpa": "", 
         #     "cta": "", 
         # },
-        "finetuning-dataset": { 
-            "tables": "./Training_Data/tables", 
-            "cea": "./Training_Data/gt/finetuning_gt.csv", 
+        "github-dataset": { 
+            "tables": "./Github_Data/tables", 
+            "cea": "", 
             "cpa": "", 
             "cta": "", 
         },
