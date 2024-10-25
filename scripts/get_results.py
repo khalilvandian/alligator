@@ -24,7 +24,7 @@ if __name__ == "__main__":
         "--gt_path",
         type=str,
         help="Path to the ground truth",
-        default="gh/gt/cea_gt.csv",  # "/home/gatoraid/alligator/datasets/biodiv/gt/cea_gt.csv",
+        default="./Training_Data/gt/cea_gt.csv",  # "/home/gatoraid/alligator/datasets/biodiv/gt/cea_gt.csv",
     )
     parser.add_argument(
         "--output_path",

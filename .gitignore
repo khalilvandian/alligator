@@ -163,13 +163,10 @@ mongo-data/
 .DS_Store
 work/
 *.ipynb
-<<<<<<< HEAD
-=======
 datasets
 api/datasets
 results
 training/
 .vscode/
 finetuning/
->>>>>>> upstream/feature/lamapi-sintef
 
