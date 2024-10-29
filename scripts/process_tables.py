@@ -225,7 +225,7 @@ if __name__ == "__main__":
         # include_ids: False
         # header: infer
         # columns_to_exclude: ["idd", "id"]
-        "github-testset": {
+        "github-testset-fixed": {
             "tables": "./gh/tables",
             "cea": "./gh/gt/cea_gt.csv",
             "cpa": "",
@@ -269,7 +269,7 @@ if __name__ == "__main__":
             separator=",",
             include_ids=True,
             header="infer",
-            columns_to_exclude=[],
+            columns_to_exclude=["id", "idd"],
         )
         response = requests.post(
             "http://127.0.0.1:5042//dataset/createWithArray",

@@ -14,12 +14,12 @@ if __name__ == "__main__":
         help="Endpoint to get the results from",
         default="http://localhost:5043",
     )
-    parser.add_argument("--dataset_name", type=str, default="github-testset")
+    parser.add_argument("--dataset_name", type=str, default="github-testset-fixed")
     parser.add_argument(
         "--output_path",
         type=str,
         help="Directory to save the JSON results",
-        default="results/Github",
+        default="results",
     )
     args = parser.parse_args()
     args.output_path = os.path.expanduser(args.output_path)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     os.makedirs(args.output_path, exist_ok=True)
 
     # List of table names to fetch
-    tables_names = ["github_dataset"]  # Replace with actual table names
+    tables_names = ["Github_Testset"]  # Replace with actual table names
 
     for table_name in tables_names:
         page = 1
