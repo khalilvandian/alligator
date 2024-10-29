@@ -225,24 +225,24 @@ if __name__ == "__main__":
         # include_ids: False
         # header: infer
         # columns_to_exclude: ["idd", "id"]
-        # "github-testset": {
-        #     "tables": "./gh/tables",
-        #     "cea": "./gh/gt/cea_gt.csv",
-        #     "cpa": "",
-        #     "cta": "",
-        # },
+        "github-testset": {
+            "tables": "./gh/tables",
+            "cea": "./gh/gt/cea_gt.csv",
+            "cpa": "",
+            "cta": "",
+        },
         # "finetuning-dataset": { 
         #     "tables": "./Training_Data/tables", 
         #     "cea": "./Training_Data/gt/finetuning_gt.csv", 
         #     "cpa": "", 
         #     "cta": "", 
         # },
-        "github-dataset": { 
-            "tables": "./Github_Data/tables", 
-            "cea": "", 
-            "cpa": "", 
-            "cta": "", 
-        },
+        # "github-dataset": { 
+        #     "tables": "./Github_Data/tables", 
+        #     "cea": "./Github_Data/gt/cea_gt.csv", 
+        #     "cpa": "", 
+        #     "cta": "", 
+        # },
     }
 
     headers = {
