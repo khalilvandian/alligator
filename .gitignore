@@ -162,7 +162,6 @@ redis-data
 mongo-data/
 .DS_Store
 work/
-*.ipynb
 datasets
 api/datasets
 results
