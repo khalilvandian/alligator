@@ -19,7 +19,7 @@ if __name__ == "__main__":
     )
     # parser.add_argument("--dataset_name", type=str, default="biodiv-cikm-2nd-turl-scratch")
     # parser.add_argument("--dataset_name", type=str, default="htr2-rn-from-scratch-turl-120k")
-    parser.add_argument("--dataset_name", type=str, default="github-testset")
+    parser.add_argument("--dataset_name", type=str, default="github-testset-fixed-02")
     parser.add_argument(
         "--gt_path",
         type=str,
@@ -90,7 +90,7 @@ if __name__ == "__main__":
             if response:
                 alligator_annotations = response.json()
                 # write json to file
-                with open(f"alligator_annotations_{table_name}_testset.json", "w") as f:
+                with open(f"./Results/gh_testset_paginated_02/alligator_annotations_{table_name}_testset.json", "w") as f:
                     json.dump(alligator_annotations, f)
 
                 # print(alligator_annotations["semanticAnnotations"])

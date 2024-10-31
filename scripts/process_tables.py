@@ -225,7 +225,7 @@ if __name__ == "__main__":
         # include_ids: False
         # header: infer
         # columns_to_exclude: ["idd", "id"]
-        "github-testset-fixed": {
+        "github-testset-fixed-02": {
             "tables": "./gh/tables",
             "cea": "./gh/gt/cea_gt.csv",
             "cpa": "",
