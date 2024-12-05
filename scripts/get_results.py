@@ -89,31 +89,36 @@ if __name__ == "__main__":
             )
             if response:
                 alligator_annotations = response.json()
-                # write json to file
-                with open(f"./Results/gh_testset_paginated_02/alligator_annotations_{table_name}_testset.json", "w") as f:
-                    json.dump(alligator_annotations, f)
 
-                # print(alligator_annotations["semanticAnnotations"])
+                # # write the annotations to a file
+                # try:
+                #     output_file = os.path.join(args.output_path, f"alligator_annotations_{args.dataset_name}_{current_table_name}.json")
+                #     with open(output_file, "w") as f:
+                #         json.dump(alligator_annotations, f)
+                #     print(f"Annotations for {current_table_name} saved successfully.")
+                # except Exception as e:
+                #     print(f"Failed to save annotations for {current_table_name}: {e}")
+
                 alligator_annotations = alligator_annotations["semanticAnnotations"]["cea"]
             else:
                 alligator_annotations = []
-    #         for annotation in alligator_annotations:
-    #             key = "{}-{}-{}".format(current_table_name, annotation["idRow"], annotation["idColumn"])
-    #             # if key in gt_mapping_nil:
-    #             #     continue
-    #             if key not in gt_mapping:
-    #                 continue
-    #             predicted_qid = ""
-    #             if len(annotation["entity"]) > 0:
-    #                 all_predicted += 1
-    #                 predicted_qid = annotation["entity"][0]["id"]
-    #             if predicted_qid != "" and predicted_qid in gt_mapping[key]["target"]:
-    #                 tp += 1
-    # precision = tp / all_predicted
-    # recall = tp / all_gt
-    # f1 = 2 * (precision * recall) / (precision + recall)
-    # print("Number of mentions to be linked:", all_gt)
-    # print("Number of mentions linked:", all_predicted)
-    # print("Precision: {:.4f}".format(precision))
-    # print("Recall: {:.4f}".format(recall))
-    # print("F1: {:.4f}".format(f1))
+            for annotation in alligator_annotations:
+                key = "{}-{}-{}".format(current_table_name, annotation["idRow"], annotation["idColumn"])
+                # if key in gt_mapping_nil:
+                #     continue
+                if key not in gt_mapping:
+                    continue
+                predicted_qid = ""
+                if len(annotation["entity"]) > 0:
+                    all_predicted += 1
+                    predicted_qid = annotation["entity"][0]["id"]
+                if predicted_qid != "" and predicted_qid in gt_mapping[key]["target"]:
+                    tp += 1
+    precision = tp / all_predicted
+    recall = tp / all_gt
+    f1 = 2 * (precision * recall) / (precision + recall)
+    print("Number of mentions to be linked:", all_gt)
+    print("Number of mentions linked:", all_predicted)
+    print("Precision: {:.4f}".format(precision))
+    print("Recall: {:.4f}".format(recall))
+    print("F1: {:.4f}".format(f1))
