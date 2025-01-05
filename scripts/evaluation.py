@@ -92,8 +92,8 @@ def extract_scores(alligator_annotations, gt_mapping, current_table_name, includ
     return scores
 
 if __name__ == "__main__":
-    alligator_annotations_path = "./Results/github testset - previous processes/exampleResponse.json"
-    gt_file_path = './gh/gt/cea_gt.csv'
+    alligator_annotations_path = "./Results/alligator_annotations_github-testset_babakAlessandro_02_Github_Testset.json"
+    gt_file_path = './Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv'
     current_table_name = 'Github_Testset'
 
     gt = load_ground_truth(gt_file_path)

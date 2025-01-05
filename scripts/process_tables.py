@@ -24,9 +24,11 @@ def cea_process(
 ):
     url_regex = re.compile(r"http(s)?\:\/\/www\.wikidata\.org\/(wiki|entity)\/")
     cea_gt = pd.read_csv(cea_target_path, sep=separator, header=None)
+
     if drop_nil:
         cea_gt = cea_gt[cea_gt[3] != "NIL"]
         cea_gt = cea_gt[cea_gt[3] != ""]
+
     cea_gt.iloc[:, -1] = cea_gt.iloc[:, -1].apply(lambda x: url_regex.sub("", x))
     cea_gt[1] = cea_gt[1].astype(int)
     cea_gt[2] = cea_gt[2].astype(int)
@@ -225,24 +227,30 @@ if __name__ == "__main__":
         # include_ids: False
         # header: infer
         # columns_to_exclude: ["idd", "id"]
-        "github-testset-fixed-02": {
-            "tables": "./gh/tables",
-            "cea": "./gh/gt/cea_gt.csv",
-            "cpa": "",
-            "cta": "",
-        },
+        # "github-testset": {
+        #     "tables": "./gh/tables",
+        #     "cea": "./gh/gt/cea_gt.csv",
+        #     "cpa": "",
+        #     "cta": "",
+        # },
         # "finetuning-dataset": { 
         #     "tables": "./Training_Data/tables", 
         #     "cea": "./Training_Data/gt/finetuning_gt.csv", 
         #     "cpa": "", 
         #     "cta": "", 
         # },
-        # "github-dataset": { 
+        # "all_github_data": { 
         #     "tables": "./Github_Data/tables", 
         #     "cea": "./Github_Data/gt/cea_gt.csv", 
         #     "cpa": "", 
         #     "cta": "", 
-        # },
+        # },\Data\AlessandroBabak_Annotations_Github_Testset
+        "github-testset_babakAlessandro_02": {
+            "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
+            "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
+            "cpa": "",
+            "cta": "",
+        },
     }
 
     headers = {

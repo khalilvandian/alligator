@@ -17,20 +17,19 @@ if __name__ == "__main__":
         help="Endpoint to get the results from",
         default="http://localhost:5043",
     )
-    # parser.add_argument("--dataset_name", type=str, default="biodiv-cikm-2nd-turl-scratch")
-    # parser.add_argument("--dataset_name", type=str, default="htr2-rn-from-scratch-turl-120k")
-    parser.add_argument("--dataset_name", type=str, default="github-testset-fixed-02")
+
+    parser.add_argument("--dataset_name", type=str, default="github-testset_babakAlessandro_02")
     parser.add_argument(
         "--gt_path",
         type=str,
         help="Path to the ground truth",
-        default="./gh/gt/cea_gt.csv",  # "/home/gatoraid/alligator/datasets/biodiv/gt/cea_gt.csv",
+        default="./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv", # "./gh/gt/cea_gt.csv"
     )
     parser.add_argument(
         "--output_path",
         type=str,
         help="Path to save the results",
-        default="results.csv",
+        default="./Results/",
     )
     parser.add_argument(
         "--invert_row_col",
@@ -41,6 +40,7 @@ if __name__ == "__main__":
         "--include_nil",
         action="store_true",
         help="Whether or not to include the NIL prediction in the results",
+        default=True,
     )
     args = parser.parse_args()
     args.gt_path = os.path.expanduser(args.gt_path)
@@ -90,14 +90,14 @@ if __name__ == "__main__":
             if response:
                 alligator_annotations = response.json()
 
-                # # write the annotations to a file
-                # try:
-                #     output_file = os.path.join(args.output_path, f"alligator_annotations_{args.dataset_name}_{current_table_name}.json")
-                #     with open(output_file, "w") as f:
-                #         json.dump(alligator_annotations, f)
-                #     print(f"Annotations for {current_table_name} saved successfully.")
-                # except Exception as e:
-                #     print(f"Failed to save annotations for {current_table_name}: {e}")
+                # write the annotations to a file
+                try:
+                    output_file = os.path.join(args.output_path, f"alligator_annotations_{args.dataset_name}_{current_table_name}.json")
+                    with open(output_file, "w") as f:
+                        json.dump(alligator_annotations, f)
+                    print(f"Annotations for {current_table_name} saved successfully.")
+                except Exception as e:
+                    print(f"Failed to save annotations for {current_table_name}: {e}")
 
                 alligator_annotations = alligator_annotations["semanticAnnotations"]["cea"]
             else:
