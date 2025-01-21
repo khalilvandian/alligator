@@ -245,12 +245,18 @@ if __name__ == "__main__":
         #     "cpa": "", 
         #     "cta": "", 
         # },\Data\AlessandroBabak_Annotations_Github_Testset
-        "github-testset_babakAlessandro_02": {
+        "github-testset_babakAlessandro_03": {
             "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
             "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
             "cpa": "",
             "cta": "",
         },
+        # "github-testset_babakAlessandro_NoIds_2": {
+        #     "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
+        #     "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
+        #     "cpa": "",
+        #     "cta": "",
+        # },
     }
 
     headers = {

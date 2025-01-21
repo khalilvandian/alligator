@@ -18,7 +18,7 @@ if __name__ == "__main__":
         default="http://localhost:5043",
     )
 
-    parser.add_argument("--dataset_name", type=str, default="github-testset_babakAlessandro_02")
+    parser.add_argument("--dataset_name", type=str, default="github-testset_babakAlessandro_NoIds")
     parser.add_argument(
         "--gt_path",
         type=str,
