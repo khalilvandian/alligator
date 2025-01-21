@@ -32,9 +32,7 @@ def cea_process(
     cea_gt.iloc[:, -1] = cea_gt.iloc[:, -1].apply(lambda x: url_regex.sub("", x))
     cea_gt[1] = cea_gt[1].astype(int)
     cea_gt[2] = cea_gt[2].astype(int)
-    NE_cols = (
-        set()
-    )  # to store couple of (id_table, id_col) for tracing NE cols to be annotated!
+    NE_cols = set()  # to store couple of (id_table, id_col) for tracing NE cols to be annotated!
     cell_to_entity = {}
     if invert_rows_cols:
         cea_gt_np = cea_gt.to_numpy()
@@ -71,6 +69,7 @@ def generate_api_format(
     include_ids=False,
     header="infer",
     columns_to_exclude=[],
+    all_NE_cols=False,
 ):
     buffer = []
     tables = os.listdir(tables_path)
@@ -79,12 +78,12 @@ def generate_api_format(
         if table.startswith("."):
             continue
         try:
-            df = pd.read_csv(
-                f"{tables_path}/{table}", sep=separator, header=header
-            )  # Change delimiter if different
+            df = pd.read_csv(f"{tables_path}/{table}", sep=separator, header=header)  # Change delimiter if different
             df = df.drop(columns=columns_to_exclude)
             if header is None:
                 df.columns = ["col" + str(i) for i in range(len(df.columns))]
+            if all_NE_cols:
+                NE_cols = set([f"{name} {i}" for i in range(len(df.columns))])
         except pd.errors.ParserError:
             print(f"Error parsing {tables_path}/{table}")
             continue
@@ -120,10 +119,7 @@ def generate_api_format(
                 {
                     "idRow": id_row,
                     "data": [str(cell) for cell in row],
-                    "ids": [
-                        str(cell_to_entity.get(f"{name} {id_row} {id_col}", ""))
-                        for id_col, _ in enumerate(row)
-                    ],
+                    "ids": [str(cell_to_entity.get(f"{name} {id_row} {id_col}", "")) for id_col, _ in enumerate(row)],
                 }
                 if include_ids
                 else {"idRow": id_row, "data": [str(cell) for cell in row]}
@@ -153,6 +149,7 @@ if __name__ == "__main__":
         #     "cpa": "",
         #     "cta": "",
         # },
+
         # Parameters:
         # gt separator: ","
         # tables separator: ","
@@ -165,18 +162,19 @@ if __name__ == "__main__":
         #     "cpa": "",
         #     "cta": "",
         # },
+
         # Parameters:
         # gt separator: ","
         # tables separator: ","
         # invert_rows_cols: False
         # include_ids: True
         # header: "infer"
-        # "htr1-baseline-no-qids": {
-        #     "tables": "/home/gatoraid/alligator/datasets/hardtabler1/tables",
-        #     "cea": "/home/gatoraid/alligator/datasets/hardtabler1/gt/cea_gt.csv",
-        #     "cpa": "",
-        #     "cta": "",
-        # },
+        "htr1-baseline-test": {
+            "tables": "/home/gatoraid/alligator/datasets/hardtabler1/tables",
+            "cea": "/home/gatoraid/alligator/datasets/hardtabler1/gt/cea_gt.csv",
+            "cpa": "",
+            "cta": "",
+        },
         # "htr2-rn-from-scratch-turl-120k-correct-qids": {
         #     "tables": "/home/gatoraid/alligator/datasets/hardtabler2/tables",
         #     "cea": "/home/gatoraid/alligator/datasets/hardtabler2/gt/cea_gt.csv",
@@ -195,6 +193,7 @@ if __name__ == "__main__":
         #     "cpa": "",
         #     "cta": "",
         # },
+        
         # Parameters:
         # gt separator: ","
         # tables separator: ","
@@ -207,6 +206,7 @@ if __name__ == "__main__":
         #     "cpa": "",
         #     "cta": "",
         # },
+        
         # Parameters:
         # gt separator: ","
         # tables separator: ","
@@ -214,12 +214,13 @@ if __name__ == "__main__":
         # include_ids: True
         # header: infer
         # columns_to_exclude: ["HIL_total"]
-        # "sn-linker-nil": {
-        #     "tables": "/home/gatoraid/alligator/datasets/sn/tables",
-        #     "cea": "/home/gatoraid/alligator/datasets/sn/gt/cea_gt.csv",
+        # "processed_sn": {
+        #     "tables": "/home/gatoraid/alligator/datasets/sn_processed/tables/",
+        #     "cea": "",
         #     "cpa": "",
         #     "cta": "",
         # },
+        
         # Parameters:
         # gt separator: ","
         # tables separator: ","
@@ -266,14 +267,18 @@ if __name__ == "__main__":
     params = (("token", "alligator_demo_2023"), ("kg", "wikidata"))
 
     for dataset in datasets:
-        tables_path, cea_target_path, cpa_target_path, cta_target_path = list(
-            datasets[dataset].values()
-        )
-        cell_to_entity, NE_cols, minimum_row_is_zero = cea_process(
-            cea_target_path,
-            separator=",",
-            invert_rows_cols=False,
-        )
+        tables_path, cea_target_path, cpa_target_path, cta_target_path = list(datasets[dataset].values())
+        if cea_target_path == "" or not os.path.exists(cea_target_path):
+            print(f"Path {tables_path} does not exist. Alligator is run without any previous knowledge.")
+            cell_to_entity = {}
+            NE_cols = {}
+            minimum_row_is_zero = False
+        else:
+            cell_to_entity, NE_cols, minimum_row_is_zero = cea_process(
+                cea_target_path,
+                separator=",",
+                invert_rows_cols=False,
+            )
         buffer = generate_api_format(
             dataset,
             tables_path,
