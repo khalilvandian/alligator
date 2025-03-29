@@ -169,7 +169,11 @@ if __name__ == "__main__":
         # invert_rows_cols: False
         # include_ids: True
         # header: "infer"
+<<<<<<< Updated upstream
         # "htr1-baseline-no-qids": {
+=======
+        # "htr1-baseline-test": {
+>>>>>>> Stashed changes
         #     "tables": "/home/gatoraid/alligator/datasets/hardtabler1/tables",
         #     "cea": "/home/gatoraid/alligator/datasets/hardtabler1/gt/cea_gt.csv",
         #     "cpa": "",
@@ -242,7 +246,22 @@ if __name__ == "__main__":
         #     "cea": "./Github_Data/gt/cea_gt.csv", 
         #     "cpa": "", 
         #     "cta": "", 
+<<<<<<< Updated upstream
+=======
+        # },\Data\AlessandroBabak_Annotations_Github_Testset
+        # "github-testset_babakAlessandro_03": {
+        #     "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
+        #     "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
+        #     "cpa": "",
+        #     "cta": "",
+>>>>>>> Stashed changes
         # },
+        "github-testset_babakAlessandro_NoIds_1": {
+            "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
+            "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
+            "cpa": "",
+            "cta": "",
+        },
     }
 
     headers = {
