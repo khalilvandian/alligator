@@ -169,12 +169,16 @@ if __name__ == "__main__":
         # invert_rows_cols: False
         # include_ids: True
         # header: "infer"
-        "htr1-baseline-test": {
-            "tables": "/home/gatoraid/alligator/datasets/hardtabler1/tables",
-            "cea": "/home/gatoraid/alligator/datasets/hardtabler1/gt/cea_gt.csv",
-            "cpa": "",
-            "cta": "",
-        },
+<<<<<<< Updated upstream
+        # "htr1-baseline-no-qids": {
+=======
+        # "htr1-baseline-test": {
+>>>>>>> Stashed changes
+        #     "tables": "/home/gatoraid/alligator/datasets/hardtabler1/tables",
+        #     "cea": "/home/gatoraid/alligator/datasets/hardtabler1/gt/cea_gt.csv",
+        #     "cpa": "",
+        #     "cta": "",
+        # },
         # "htr2-rn-from-scratch-turl-120k-correct-qids": {
         #     "tables": "/home/gatoraid/alligator/datasets/hardtabler2/tables",
         #     "cea": "/home/gatoraid/alligator/datasets/hardtabler2/gt/cea_gt.csv",
@@ -245,18 +249,6 @@ if __name__ == "__main__":
         #     "cea": "./Github_Data/gt/cea_gt.csv", 
         #     "cpa": "", 
         #     "cta": "", 
-        # },\Data\AlessandroBabak_Annotations_Github_Testset
-        "github-testset_babakAlessandro_03": {
-            "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
-            "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
-            "cpa": "",
-            "cta": "",
-        },
-        # "github-testset_babakAlessandro_NoIds_2": {
-        #     "tables": "./Data/AlessandroBabak_Annotations_Github_Testset/tables",
-        #     "cea": "./Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv",
-        #     "cpa": "",
-        #     "cta": "",
         # },
     }
 
