@@ -1,163 +1,120 @@
 import json
 import pandas as pd
-import argparse
-import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
 
-if __name__ == "__main__":
-    alligatior_annotations_path = "B:/Projects/alligator/Data/exampleResponse.json"
-    gt_file_path = 'B:/Projects/alligator/gh/gt/cea_gt.csv'
-
-    include_nil = False
-    threshold = 0.2
-
-    # Load Ground Truth for Correct QIDs
+def load_ground_truth(gt_file_path):
+    """Load and preprocess the ground truth data."""
     gt = pd.read_csv(gt_file_path, header=None)
     gt.columns = ["table_name", "row", "col", "qid"]
-    tables_names = gt["table_name"].unique().tolist()
     url_regex = re.compile(r"http(s)?\:////www/.wikidata/.org\/(wiki|entity)\/")
     gt["qid"] = gt["qid"].map(lambda x: url_regex.sub("", x))
+    return gt
 
-    # Load Alligator Annotations
-    with open(alligatior_annotations_path) as f:
-        alligator_annotations = json.load(f)
-        alligator_annotations = alligator_annotations["semanticAnnotations"]["cea"]
+def create_gt_mapping(gt, include_nil):
+    """Create mappings for ground truth based on whether to include NIL values."""
+    if include_nil:
+        return {f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid} for row in gt.itertuples()}, {}
+    else:
+        gt_mapping = {f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid} for row in gt.itertuples() if row.qid.startswith("Q")}
+        gt_mapping_nil = {f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid} for row in gt.itertuples() if row.qid.lower() == "nil"}
+        return gt_mapping, gt_mapping_nil
+
+def calculate_metrics(alligator_annotations, gt_mapping, gt_mapping_nil, include_nil, current_table_name, threshold=0.0):
+    """Calculate precision, recall, and F1 scores for a specific threshold."""
+    fn, fp, tn, tp = 0, 0, 0, 0
+
+    for annotation in alligator_annotations:
+        key = f"{current_table_name}-{annotation['idRow']}-{annotation['idColumn']}"
+
+        # Skip if the target is NIL if we are not including NIL values
+        if not include_nil and key not in gt_mapping:
+            continue
+
+        # Is it a NIL prediction?
+        if len(annotation["entity"]) == 0 or annotation["entity"][0]["score"] < threshold:
+            predicted_qid = "NIL"
+        else:
+            predicted_qid = annotation["entity"][0]["id"]
+
+        target = gt_mapping.get(key, {}).get("target", [])
+
+        if predicted_qid == "NIL" and target == "NIL":
+            tn += 1
+        elif predicted_qid == "NIL" and target != "NIL":
+            fn += 1
+        elif predicted_qid != "NIL" and (target == "NIL" or predicted_qid != target):
+            fp += 1
+        elif predicted_qid != "NIL" and target != "NIL" and predicted_qid == target:
+            tp += 1
+        else:
+            raise ValueError("case leftout")
+
+    precision = (tp / (tp + fp)) if tp + fp > 0 else 0
+    recall = (tp / (tp + fn)) if tp + fn > 0 else 0
+    f1 = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
+
+    return precision, recall, f1
+
+def plot_metrics(performance_metrics_df, include_nil):
+    """Plot precision, recall, and F1 scores against thresholds."""
+    plt.figure(figsize=(10, 6))
+    plt.plot(performance_metrics_df["threshold"], performance_metrics_df["precision"], label='Precision')
+    plt.plot(performance_metrics_df["threshold"], performance_metrics_df["recall"], label='Recall')
+    plt.plot(performance_metrics_df["threshold"], performance_metrics_df["f1"], label='F1 Score')
+    plt.xlabel('Threshold')
+    plt.ylabel('Score')
+    plt.title(f'Performance Metrics vs. Threshold ({"Including" if include_nil else "Excluding"} NIL)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def plot_score_distribution(scores, title):
+    """Plot a histogram for score distribution."""
+    plt.figure(figsize=(10, 6))
+    plt.hist(scores, bins=20, color='skyblue', edgecolor='black')
+    plt.title(title)
+    plt.xlabel('Score')
+    plt.ylabel('Frequency')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
+def extract_scores(alligator_annotations, gt_mapping, current_table_name, include_nil=False):
+    """Extract scores for NIL or non-NIL entities."""
+    scores = []
+    for mention in alligator_annotations:
+        key = f"{current_table_name}-{mention['idRow']}-{mention['idColumn']}"
+        if include_nil and key in gt_mapping:
+            scores.append(mention["entity"][0]["score"] if mention["entity"] else 0)
+        elif not include_nil and key in gt_mapping:
+            scores.append(mention["entity"][0]["score"] if mention["entity"] else 0)
+    return scores
+
+if __name__ == "__main__":
+    alligator_annotations_path = "./Results/alligator_annotations_github-testset_babakAlessandro_02_Github_Testset.json"
+    gt_file_path = './Data/AlessandroBabak_Annotations_Github_Testset/gt/cea_gt.csv'
+    current_table_name = 'Github_Testset'
+
+    gt = load_ground_truth(gt_file_path)
+
+    with open(alligator_annotations_path) as f:
+        alligator_annotations = json.load(f)["semanticAnnotations"]["cea"]
 
     for include_nil in [False, True]:
-        # Create Mapping for Ground Truth
-        if not include_nil:
-            gt_mapping = {
-                f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid}
-                for row in gt.itertuples()
-                if row.qid.startswith("Q")
-            }
-            gt_mapping_nil = {
-                f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid}
-                for row in gt.itertuples()
-                if row.qid.lower() == "nil"
-            }
-        else:
-            gt_mapping = {f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid} for row in gt.itertuples()}
-            gt_mapping_nil = {}   
-
-
-        # Set initial parameters
+        gt_mapping, gt_mapping_nil = create_gt_mapping(gt, include_nil)
         performance_metrics = []
-        current_table = None
-        current_table_name = 'Github_Testset'
 
-        # Calculate Performance Metrics for Different Thresholds
-        for threshold in np.arange(0.0, 1.001, 0.001):
-            tp = 0
-            all_gt = len(gt) - len(gt_mapping_nil)
-            all_predicted = 0
-
-            for annotation in alligator_annotations:
-                key = "{}-{}-{}".format(current_table_name, annotation["idRow"], annotation["idColumn"])
-                # if key in gt_mapping_nil:
-                #     continue
-                if key not in gt_mapping:
-                    continue
-                predicted_qid = ""
-                if len(annotation["entity"]) > 0:
-                    if annotation["entity"][0]["score"] >= threshold:
-                        all_predicted += 1
-                        predicted_qid = annotation["entity"][0]["id"]
-                if predicted_qid != "" and predicted_qid in gt_mapping[key]["target"]:
-                    tp += 1
-
-            precision = tp / all_predicted if all_predicted > 0 else 0
-            recall = tp / all_gt if all_gt > 0 else 0
-            f1 = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
+        for threshold in np.arange(0.0, 1.001, 0.01):
+            precision, recall, f1 = calculate_metrics(alligator_annotations, gt_mapping, gt_mapping_nil, include_nil, current_table_name, threshold)
             performance_metrics.append([threshold, precision, recall, f1])
 
-            # if threshold*10 % 1 == 0:
-            #     print("Number of mentions to be linked:", all_gt)
-            #     print("Number of mentions linked:", all_predicted)
-            #     print("Precision: {:.4f}".format(precision))
-            #     print("Recall: {:.4f}".format(recall))
-            #     print("F1: {:.4f}".format(f1))
-            #     print("Threshold: ", threshold)
-            #     print("=====================================")
-
-        # Save Performance Metrics to a DataFrame
         performance_metrics_df = pd.DataFrame(performance_metrics, columns=["threshold", "precision", "recall", "f1"])
+        plot_metrics(performance_metrics_df, include_nil)
 
-        # Visualize Performance Metrics vs. Threshold
-        thresholds = performance_metrics_df["threshold"]
-        precision = performance_metrics_df['precision']
-        recall = performance_metrics_df['recall']
-        f1_score = performance_metrics_df['f1']
-
-        # Plotting
-        plt.figure(figsize=(10, 6))
-
-        plt.plot(thresholds, precision, label='Precision', color='blue')
-        plt.plot(thresholds, recall, label='Recall', color='green')
-        plt.plot(thresholds, f1_score, label='F1 Score', color='red')
-
-        plt.xlabel('Threshold')
-        plt.ylabel('Score')
-        if include_nil:
-            plt.title('Precision, Recall, and F1 Score vs. Threshold (Including NIL)')
-        else:
-            plt.title('Precision, Recall, and F1 Score vs. Threshold (Excluding NIL)')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-
-    # Create Mapping for Ground Truth
-    gt_mapping = {
-        f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid}
-        for row in gt.itertuples()
-        if row.qid.startswith("Q")
-    }
-    gt_mapping_nil = {
-        f"{row.table_name}-{row.row}-{row.col}": {"target": row.qid}
-        for row in gt.itertuples()
-        if row.qid.lower() == "nil"
-    }
-
-    # Score Distribution for NIL Entities
-    NIL_entity_Scores = []
-
-    # extract top score for each mention
-    for mention in alligator_annotations:
-        key = "{}-{}-{}".format(current_table_name, mention["idRow"], mention["idColumn"])
-        if key in gt_mapping_nil:
-            NIL_entity_Scores.append(mention["entity"][0]["score"] if len(mention["entity"]) > 0 else 0)
-
-    # Plotting the histogram for the 'Score' column
-    plt.figure(figsize=(10, 6))
-    plt.hist(NIL_entity_Scores, bins=20, color='skyblue', edgecolor='black')
-    plt.title('Distribution of NIL Entity Scores')
-    plt.xlabel('Score')
-    plt.ylabel('Frequency')
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
-
-    # Score Distribution for Non-NIL Entities
-    NonNil_entity_Scores = []
-
-    # extract top score for each mention
-    for mention in alligator_annotations:
-        predicted_qid = ""
-        key = "{}-{}-{}".format(current_table_name, mention["idRow"], mention["idColumn"])
-
-        if key in gt_mapping:
-            if len(mention["entity"]) > 0:
-                NonNil_entity_Scores.append(mention["entity"][0]["score"])
-            else:
-                NonNil_entity_Scores.append(0)
-
-    # Plotting the histogram for the 'Score' column
-    # Plotting the histogram for the 'Score' column
-    plt.figure(figsize=(10, 6))
-    plt.hist(NonNil_entity_Scores, bins=20, color='skyblue', edgecolor='black')
-    plt.title('Distribution of Non NIL Entity Scores')
-    plt.xlabel('Score')
-    plt.ylabel('Frequency')
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
+    # Plot score distributions for non-NIL and NIL entities
+    gt_mapping, gt_mapping_nil = create_gt_mapping(gt, include_nil=False)
+    nil_scores = extract_scores(alligator_annotations, gt_mapping_nil, current_table_name, include_nil=True)
+    non_nil_scores = extract_scores(alligator_annotations, gt_mapping, current_table_name, include_nil=False)
+    plot_score_distribution(nil_scores, 'Distribution of NIL Entity Scores')
+    plot_score_distribution(non_nil_scores, 'Distribution of Non-NIL Entity Scores')
